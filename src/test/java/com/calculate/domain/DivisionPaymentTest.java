@@ -1,11 +1,10 @@
-package com.calculate.divisionPayment;
+package com.calculate.domain;
 
-import org.assertj.core.api.Assertions;
+import com.calculate.domain.DivisionPayment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class DivisionPaymentTest {
 
