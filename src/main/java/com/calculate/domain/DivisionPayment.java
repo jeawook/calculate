@@ -1,14 +1,15 @@
-package com.calculate.divisionPayment;
+package com.calculate.domain;
 
-import com.calculate.payment.Payment;
-import lombok.Builder;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DivisionPayment {
 
     @Id @GeneratedValue
@@ -18,8 +19,16 @@ public class DivisionPayment {
     private int amount;
     private int userId;
 
+    @Enumerated
+    private DPstatus dPstatus;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
+    @JsonIgnore
     Payment payment;
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
 
 }
