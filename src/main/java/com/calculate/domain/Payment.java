@@ -33,7 +33,7 @@ public class Payment extends BaseTimeEntity {
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<DivisionPayment> divisionPayments = new ArrayList<>();
 
-    public int getPAmountPaid() {
+    public int getAmountPaid() {
         return divisionPayments.stream().filter(divisionPayment -> divisionPayment.getDPstatus().equals(DPstatus.COMPLETE))
                 .mapToInt(DivisionPayment::getAmount).sum();
     }
