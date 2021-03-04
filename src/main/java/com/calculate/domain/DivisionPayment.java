@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"payment"})
 public class DivisionPayment {
 
     @Id @GeneratedValue
@@ -29,6 +30,12 @@ public class DivisionPayment {
 
     public void setPayment(Payment payment) {
         this.payment = payment;
+    }
+
+    public int payment(int userId) {
+        this.userId = userId;
+        this.dPstatus = DPstatus.COMPLETE;
+        return this.amount;
     }
 
 }

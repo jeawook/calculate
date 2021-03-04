@@ -42,14 +42,14 @@ public class PaymentController {
             return ResponseEntity.badRequest().build();
         }
 
-        Payment payment = modelMapper.map(paymentDto, Payment.class);
-        String token = paymentService.createPayment(payment);
-        WebMvcLinkBuilder webMvcLinkBuilder = linkTo(PaymentController.class).slash(token);
+        Payment createdPayment = paymentService.createPayment(paymentDto.getTotalAmount(), paymentDto.getDivisionCnt(),userId, roomId );
+
+        WebMvcLinkBuilder webMvcLinkBuilder = linkTo(PaymentController.class).slash(createdPayment.getToken());
         URI createUri =webMvcLinkBuilder.toUri();
 
         //PaymentResource paymentResource =new PaymentResource(payment);
         Map<String, String> map = new HashMap<>();
-        map.put("token", token);
+        map.put("token", createdPayment.getToken());
 /*        EntityModel<Map<String, String>> entityModel = new EntityModel<>(map);
         entityModel.add(linkTo(PaymentController.class).withRel("query-payment"));
         entityModel.add(webMvcLinkBuilder.withRel("update-payment"));
@@ -57,6 +57,11 @@ public class PaymentController {
 
         return ResponseEntity.created(createUri).body(map);
     }
+
+    /*@GetMapping
+    public ResponseEntity getPayment(@RequestHeader(room) String roomId, @RequestHeader(user) Integer userId, @RequestBody String token) {
+
+    }*/
 
     private ResponseEntity badRequest(Errors errors) {
         return ResponseEntity.badRequest().body(new ErrorResource(errors));

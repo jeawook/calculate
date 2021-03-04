@@ -3,12 +3,14 @@ package com.calculate.service;
 import com.calculate.domain.DPstatus;
 import com.calculate.domain.DivisionPayment;
 import com.calculate.domain.Payment;
+import com.calculate.dto.PaymentDto;
 import com.calculate.repository.DivisionPaymentRepository;
 import com.calculate.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -21,14 +23,24 @@ public class PaymentService {
     private final DivisionPaymentRepository divisionPaymentRepository;
 
     @Transactional
-    public String createPayment(Payment payment) {
-        payment.setToken(makeToken());
+    public Payment createPayment(int totalAmount, int divisionCnt, int userId, String roomId) {
+        Payment payment = Payment.builder()
+                            .divisionCnt(divisionCnt)
+                            .totalAmount(totalAmount)
+                            .token(makeToken())
+                            .userId(userId)
+                            .divisionPayments(makeDivisionPayments(totalAmount,divisionCnt))
+                            .roomId(roomId)
+                            .build();
+        paymentRepository.save(payment);
+        return payment;
+    }
 
-        Payment save = paymentRepository.save(payment);
-        addDivisionPayments(payment);
-        divisionPaymentRepository.saveAll(payment.getDivisionPayments());
-
-        return save.getToken();
+    @Transactional
+    public int payment(String token, int userId) {
+        List<DivisionPayment> divisionPayments = divisionPaymentRepository.findIncomplete(token, DPstatus.INCOMPLETE);
+        DivisionPayment divisionPayment = divisionPayments.get(0);
+        return divisionPayment.payment(userId);
     }
 
     public List<Payment> findPayment(String token) {
@@ -36,23 +48,25 @@ public class PaymentService {
     }
 
 
-    private void addDivisionPayments(Payment payment) {
+    private List<DivisionPayment> makeDivisionPayments(int totalAmount, int divisionCnt) {
 
-        int divisionCnt = payment.getDivisionCnt();
-        int totalAmount = payment.getTotalAmount();
+        List<DivisionPayment> divisionPayments = new ArrayList<>();
         int mok = totalAmount/divisionCnt;
         int na = totalAmount%divisionCnt;
         for (int i = 0; i < divisionCnt-1; i++) {
-            makeDivisionAmount(payment, mok, 0);
+            divisionPayments.add(DivisionPayment.builder()
+                    .amount(mok)
+                    .dPstatus(DPstatus.INCOMPLETE)
+                    .build());
         }
-        makeDivisionAmount(payment, mok, na);
+        divisionPayments.add(DivisionPayment.builder()
+                .amount(mok+na)
+                .dPstatus(DPstatus.INCOMPLETE)
+                .build());
+        return divisionPayments;
 
     }
 
-    private void makeDivisionAmount(Payment payment, int mok, int na) {
-        DivisionPayment divisionPayment = getDivisionPayment(mok, na);
-        payment.addDivisionPayment(divisionPayment);
-    }
 
     private DivisionPayment getDivisionPayment(int mok, int na) {
         DivisionPayment divisionPayment = DivisionPayment.builder()

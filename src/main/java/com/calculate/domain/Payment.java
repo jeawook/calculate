@@ -1,11 +1,9 @@
 package com.calculate.domain;
 
 import lombok.*;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +14,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Payment {
+public class Payment extends BaseTimeEntity {
 
     @Id @GeneratedValue
     @Column(name = "payment_id")
@@ -32,24 +30,15 @@ public class Payment {
 
     private int totalAmount;
 
-    @OneToMany(mappedBy = "payment")
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<DivisionPayment> divisionPayments = new ArrayList<>();
-
-    @CreatedBy
-    @Column(updatable = false)
-    private LocalDateTime createdDateTime;
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public void addDivisionPayment(DivisionPayment divisionPayment) {
-            this.divisionPayments.add(divisionPayment);
-            divisionPayment.setPayment(this);
-    }
 
     public int getPAmountPaid() {
         return divisionPayments.stream().filter(divisionPayment -> divisionPayment.getDPstatus().equals(DPstatus.COMPLETE))
                 .mapToInt(DivisionPayment::getAmount).sum();
+    }
+    public void addDivisionPayment(DivisionPayment divisionPayment) {
+        divisionPayments.add(divisionPayment);
+        divisionPayment.setPayment(this);
     }
 }
