@@ -68,15 +68,6 @@ public class PaymentService {
     }
 
 
-    private DivisionPayment getDivisionPayment(int mok, int na) {
-        DivisionPayment divisionPayment = DivisionPayment.builder()
-                .amount(mok + na)
-                .dPstatus(DPstatus.INCOMPLETE)
-                .build();
-        return divisionPayment;
-    }
-
-
     private String makeToken() {
         StringBuffer buffer = new StringBuffer();
         Random random = new Random();
