@@ -14,6 +14,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"divisionPayments"})
 public class Payment extends BaseTimeEntity {
 
     @Id @GeneratedValue
@@ -22,6 +23,7 @@ public class Payment extends BaseTimeEntity {
 
     private int divisionCnt;
 
+    @Column(unique = true)
     private String token;
 
     private String roomId;
@@ -37,8 +39,18 @@ public class Payment extends BaseTimeEntity {
         return divisionPayments.stream().filter(divisionPayment -> divisionPayment.getDPstatus().equals(DPstatus.COMPLETE))
                 .mapToInt(DivisionPayment::getAmount).sum();
     }
-    public void addDivisionPayment(DivisionPayment divisionPayment) {
-        divisionPayments.add(divisionPayment);
-        divisionPayment.setPayment(this);
+
+    @Builder(builderClassName = "createPaymentBuilder", builderMethodName = "createPaymentBuilder")
+    public Payment(int divisionCnt, String token, String roomId, int userId, int totalAmount, List<DivisionPayment> divisionPayments) {
+        this.divisionCnt = divisionCnt;
+        this.userId = userId;
+        this.token = token;
+        this.roomId = roomId;
+        this.totalAmount = totalAmount;
+        for (DivisionPayment dp : divisionPayments) {
+            this.divisionPayments.add(dp);
+            dp.setPayment(this);
+        }
     }
+
 }

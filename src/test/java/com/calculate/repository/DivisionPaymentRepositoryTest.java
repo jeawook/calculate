@@ -66,9 +66,10 @@ class DivisionPaymentRepositoryTest {
     @Test
     @DisplayName("divisionPayment 검색 테스트")
     public void selectDivisionPaymentByTokenTest() {
-        List<DivisionPayment> divisionPayments = divisionPaymentRepository.findIncomplete("test", DPstatus.INCOMPLETE);
+        List<DivisionPayment> divisionPayments = divisionPaymentRepository.findByToken("test");
         DivisionPayment divisionPayment = divisionPayments.get(0);
 
+        assertThat(divisionPayments.size()).isEqualTo(2);
         assertThat(divisionPayment.getAmount()).isEqualTo(0);
         assertThat(divisionPayment.getUserId()).isEqualTo(0);
     }

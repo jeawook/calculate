@@ -12,16 +12,25 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class PaymentDto {
 
-    @NotNull
-    private int divisionCnt;
-    @Min(0)
-    private int totalAmount;
+    @Data
+    @Builder
+    public static class request {
+        @Min(1)
+        private int divisionCnt;
+        @Min(1)
+        private int totalAmount;
+    }
+    @Data
+    @Builder
+    public static class response {
+        private LocalDateTime createdDateTime;
+        private int totalAmount;
+        private int AmountPaid;
+        private List<DivisionPaymentDto> divisionPaymentDtos;
+    }
+
 
 
 }

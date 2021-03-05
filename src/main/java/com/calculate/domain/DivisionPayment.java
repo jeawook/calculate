@@ -20,7 +20,7 @@ public class DivisionPayment {
     private int amount;
     private int userId;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private DPstatus dPstatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
