@@ -3,6 +3,7 @@ package com.calculate.repository;
 import com.calculate.domain.DPstatus;
 import com.calculate.domain.DivisionPayment;
 import com.calculate.domain.Payment;
+import com.calculate.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,22 +22,17 @@ class DivisionPaymentRepositoryTest {
     DivisionPaymentRepository divisionPaymentRepository;
     @Autowired
     PaymentRepository paymentRepository;
-    @BeforeEach
-    public void insertDivisionPayment() {
-        Payment payment = Payment.builder()
+    @Autowired
+    PaymentService paymentService;
+
+    private Payment getPayment() {
+        return Payment.builder()
                 .divisionCnt(3)
                 .totalAmount(10000)
                 .token("test")
                 .roomId("room1")
                 .userId(123)
                 .build();
-        paymentRepository.save(payment);
-
-        DPstatus incomplete = DPstatus.INCOMPLETE;
-        DivisionPayment divisionPayment1 = getDivisionPayment(payment,incomplete);
-        DivisionPayment divisionPayment2 = getDivisionPayment(payment,incomplete);
-        divisionPaymentRepository.save(divisionPayment1);
-        divisionPaymentRepository.save(divisionPayment2);
     }
 
     @Test
@@ -66,6 +62,14 @@ class DivisionPaymentRepositoryTest {
     @Test
     @DisplayName("divisionPayment 검색 테스트")
     public void selectDivisionPaymentByTokenTest() {
+        Payment payment = getPayment();
+        paymentRepository.save(payment);
+        DPstatus incomplete = DPstatus.INCOMPLETE;
+        DivisionPayment divisionPayment1 = getDivisionPayment(payment,incomplete);
+        DivisionPayment divisionPayment2 = getDivisionPayment(payment,incomplete);
+        divisionPaymentRepository.save(divisionPayment1);
+        divisionPaymentRepository.save(divisionPayment2);
+
         List<DivisionPayment> divisionPayments = divisionPaymentRepository.findByToken("test");
         DivisionPayment divisionPayment = divisionPayments.get(0);
 

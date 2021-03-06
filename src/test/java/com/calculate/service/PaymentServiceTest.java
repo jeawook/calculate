@@ -2,6 +2,7 @@ package com.calculate.service;
 
 import com.calculate.domain.Payment;
 import com.calculate.error.NotFoundException;
+import com.calculate.repository.PaymentRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.persistence.EntityManager;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -22,29 +24,30 @@ class PaymentServiceTest {
 
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     static final int totalAmount = 10000;
     static final int divisionCnt = 3;
     static final int createdUserId = 1;
     static final String createdRoomId = "room1";
-    private Payment getPayment() {
+    static String token;
+
+    @BeforeEach
+    private void createPayment() {
         Payment payment = paymentService.createPayment(totalAmount, divisionCnt, createdUserId, createdRoomId);
-        return payment;
+        token = payment.getToken();
     }
 
     @Test
     @DisplayName("Payment 생성 테스트")
     public void createPaymentTest() {
 
-        Payment createdPayment =getPayment();
-        System.out.println(createdPayment.getToken());
+        Payment createdPayment = paymentService.findPayment(token);
 
         assertThat(createdPayment.getUserId()).isEqualTo(1);
         assertThat(createdPayment.getToken()).isNotEmpty();
         assertThat(createdPayment.getCreatedDateTime()).isNotNull();
-        assertThat(createdPayment.getDivisionPayments().size()).isEqualTo(3);
-        assertThat(createdPayment.getAmountPaid()).isEqualTo(0);
-
     }
 
 
@@ -52,10 +55,8 @@ class PaymentServiceTest {
     @Test
     @DisplayName("받기 테스트")
     public void paymentTest() throws IllegalAccessException {
-        Payment createdPayment =getPayment();
-        String token = createdPayment.getToken();
         Payment findPayment = paymentService.findPayment(token);
-        int payment = paymentService.payment(findPayment.getToken(),"room1", 1);
+        int payment = paymentService.payment(findPayment.getToken(),"room1", 2);
         Assertions.assertThat(payment).isEqualTo(3333);
     }
 
@@ -73,8 +74,6 @@ class PaymentServiceTest {
     @Test
     @DisplayName("payment exception 테스트")
     public void paymentExceptionTest() {
-        Payment createdPayment =getPayment();
-        String token = createdPayment.getToken();
         String roomId = "room2";
         int userId = 2;
         Payment findPayment = paymentService.findPayment(token);
@@ -98,8 +97,19 @@ class PaymentServiceTest {
         }catch(IllegalAccessException e) {
 
         }
-
-
     }
+
+    @Test
+    @DisplayName("뿌리기 생성 후 시간이 10분이상 지나면 만료")
+    public void paymentTimeExpenseTest() {
+        try {
+            int payment = paymentService.payment(token, createdRoomId, 3);
+            fail("생성후 10분이상이 지나 오류 발생 해야됨");
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
 }

@@ -10,8 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import java.time.LocalDateTime;
+
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,13 +44,13 @@ class PaymentControllerTest extends BaseControllerTest {
     }
 
     @Test
-    @DisplayName("get 요청으로 뿌리기 받기")
+    @DisplayName("put 요청으로 뿌리기 받기")
     public void paymentPaidTest() throws Exception{
 
         Payment payment = paymentService.createPayment(10000, 3, 1, "room1");
         String token = payment.getToken();
         System.out.println(token);
-        mockMvc.perform(get("/api/payment/"+token)
+        mockMvc.perform(put("/api/payment/"+token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HEADER_USER_ID,4)
                         .header(HEADER_ROOM_ID, "room1")
@@ -61,26 +62,46 @@ class PaymentControllerTest extends BaseControllerTest {
     }
 
     @Test
-    @DisplayName("get 요청 header가 잘못된 경우 BadRequest 받기")
+    @DisplayName("뿌리기는 생성후 10분이 지난뒤 요청을 받으면 에러")
+    public void paymentTimeErrorTest() throws Exception{
+
+        Payment payment = paymentService.createPayment(10000, 3, 1, "room1");
+        payment.setCreatedDateTime(payment.getCreatedDateTime().minusMinutes(20));
+        String token = payment.getToken();
+
+
+        mockMvc.perform(put("/api/payment/"+token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HEADER_USER_ID,4)
+                .header(HEADER_ROOM_ID, "room1")
+                .accept(MediaTypes.HAL_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("amount").exists());
+
+    }
+
+    @Test
+    @DisplayName("put 요청 header가 잘못된 경우 BadRequest 받기")
     public void paymentBadRequestTest() throws Exception{
 
         Payment payment = paymentService.createPayment(10000, 3, 1, "room1");
         String token = payment.getToken();
-        System.out.println(token);
-        mockMvc.perform(get("/api/payment/"+token)
+        String urlTemplate = "/api/payment/" + token;
+        mockMvc.perform(put(urlTemplate)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HEADER_ROOM_ID, "room1")
                 .accept(MediaTypes.HAL_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(get("/api/payment/"+token)
+        mockMvc.perform(put(urlTemplate)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaTypes.HAL_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(get("/api/payment/"+token)
+        mockMvc.perform(put(urlTemplate)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HEADER_ROOM_ID, " ")
                 .header(HEADER_USER_ID, 0)
@@ -89,4 +110,30 @@ class PaymentControllerTest extends BaseControllerTest {
                 .andExpect(status().isBadRequest());
 
     }
+
+    @Test
+    @DisplayName("뿌리기 조회")
+    public void getPaymentInfo() throws Exception{
+        String roomId = "room1";
+        int userId = 1;
+        int totalAmount = 10000;
+        Payment payment = paymentService.createPayment(totalAmount, 3, userId, roomId);
+        String token = payment.getToken();
+
+        mockMvc.perform(get("/api/payment/"+token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_ROOM_ID, roomId)
+                        .header(HEADER_USER_ID, userId)
+                        .accept(MediaTypes.HAL_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("createdDateTime").exists())
+                .andExpect(jsonPath("totalAmount").value(totalAmount))
+                .andExpect(jsonPath("amountPaid").value(0))
+                .andExpect(jsonPath("divisionPaymentDtos").exists())
+                .andExpect(jsonPath("divisionPaymentDtos[0].amount").exists())
+                .andExpect(jsonPath("divisionPaymentDtos[0].userId").exists());
+
+    }
+
 }

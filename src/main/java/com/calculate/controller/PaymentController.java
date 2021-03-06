@@ -80,9 +80,9 @@ public class PaymentController {
         Payment payment = paymentService.findPayment(token);
         PaymentDto.response response = modelMapper.map(payment, PaymentDto.response.class);
         response.setDivisionPaymentDtos(payment.getDivisionPayments().stream()
-                .map(divisionPayment -> modelMapper.map(divisionPayment, DivisionPaymentDto.class))
+                .map(divisionPayment -> modelMapper.map(divisionPayment, DivisionPaymentDto.Response.class))
                 .collect(Collectors.toList()));
-        ResponseEntity.ok(response);
+        return ResponseEntity.ok(response);
     }
 
     private ResponseEntity badRequest(Errors errors) {
