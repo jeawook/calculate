@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
@@ -44,7 +45,7 @@ public class PaymentController {
     private final String user = "X-USER-ID";
 
     @PostMapping
-    public ResponseEntity createPayment(@RequestHeader(room) @NotEmpty String roomId, @RequestHeader(user) @Min(0) Integer userId, @RequestBody @Valid PaymentDto.request paymentDto, Errors errors) {
+    public ResponseEntity createPayment(@RequestHeader(room) @NotEmpty String roomId, @RequestHeader(user) @Min(0) Long userId, @RequestBody @Valid PaymentDto.request paymentDto, Errors errors) {
         if (errors.hasErrors()) {
             return badRequest(errors);
         }
@@ -63,25 +64,23 @@ public class PaymentController {
     }
 
     @PutMapping("/{token}")
-    public ResponseEntity payment(@RequestHeader(room) @NotEmpty String roomId, @RequestHeader(user) @Min(0) Integer userId, @PathVariable String token) {
-        Map<String, Integer> map;
-        try {
-            int payment = paymentService.payment(token, roomId, userId);
-            map = new HashMap<>();
-            map.put("amount", payment);
-        } catch (IllegalAccessException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity payment(@RequestHeader(room) @NotEmpty String roomId, @RequestHeader(user) @Min(0) Long userId, @PathVariable String token) {
+        int payment = paymentService.payment(token, roomId, userId);
+        Map<String, Integer>  map = new HashMap<>();
+        map.put("amount", payment);
         return ResponseEntity.ok(map);
     }
 
     @GetMapping("/{token}")
-    public ResponseEntity getPayment(@RequestHeader(room) @NotEmpty String roomId, @RequestHeader(user) @Min(0) Integer userId, @PathVariable String token) {
-        Payment payment = paymentService.findPayment(token);
+    public ResponseEntity getPayment(@RequestHeader(room) @NotEmpty String roomId, @RequestHeader(user) @Min(0) Long userId, @PathVariable String token) {
+
+        Payment payment = paymentService.findPayment(token, userId);
+
         PaymentDto.response response = modelMapper.map(payment, PaymentDto.response.class);
         response.setDivisionPaymentDtos(payment.getDivisionPayments().stream()
                 .map(divisionPayment -> modelMapper.map(divisionPayment, DivisionPaymentDto.Response.class))
                 .collect(Collectors.toList()));
+
         return ResponseEntity.ok(response);
     }
 
