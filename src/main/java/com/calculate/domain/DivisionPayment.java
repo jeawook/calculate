@@ -18,7 +18,7 @@ public class DivisionPayment {
     private Long id;
 
     private int amount;
-    private int userId;
+    private Long userId;
 
     @Enumerated(EnumType.STRING)
     private DPstatus dPstatus;
@@ -32,7 +32,7 @@ public class DivisionPayment {
         this.payment = payment;
     }
 
-    public int payment(int userId) {
+    public int paymentPaid(Long userId) {
         this.userId = userId;
         this.dPstatus = DPstatus.COMPLETE;
         return this.amount;
