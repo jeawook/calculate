@@ -14,7 +14,7 @@ class PaymentTest {
         Payment payment = Payment.builder()
                                 .divisionCnt(3)
                                 .roomId("room1")
-                                .userId(3)
+                                .userId(3L)
                             .build();
 
         assertThat(payment.getDivisionCnt()).isEqualTo(3);

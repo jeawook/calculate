@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class DivisionPaymentRepositoryTest {
 
     @Autowired
@@ -31,7 +33,7 @@ class DivisionPaymentRepositoryTest {
                 .totalAmount(10000)
                 .token("test")
                 .roomId("room1")
-                .userId(123)
+                .userId(123L)
                 .build();
     }
 
@@ -75,7 +77,8 @@ class DivisionPaymentRepositoryTest {
 
         assertThat(divisionPayments.size()).isEqualTo(2);
         assertThat(divisionPayment.getAmount()).isEqualTo(0);
-        assertThat(divisionPayment.getUserId()).isEqualTo(0);
+        assertThat(divisionPayment.getUserId()).isNull();
+        assertThat(divisionPayment.getDPstatus()).isEqualTo(DPstatus.INCOMPLETE);
     }
 
 }

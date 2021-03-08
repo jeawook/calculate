@@ -13,7 +13,7 @@ class DivisionPaymentTest {
     public void createDivisionPaymentTest() {
         DivisionPayment divisionPayment = DivisionPayment.builder()
                 .amount(10000)
-                .userId(3)
+                .userId(3L)
                 .build();
 
         assertThat(divisionPayment.getAmount()).isEqualTo(10000);

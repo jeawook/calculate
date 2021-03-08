@@ -28,7 +28,7 @@ public class Payment extends BaseTimeEntity {
 
     private String roomId;
 
-    private int userId;
+    private Long userId;
 
     private int totalAmount;
 
@@ -41,7 +41,7 @@ public class Payment extends BaseTimeEntity {
     }
 
     @Builder(builderClassName = "createPaymentBuilder", builderMethodName = "createPaymentBuilder")
-    public Payment(int divisionCnt, String token, String roomId, int userId, int totalAmount, List<DivisionPayment> divisionPayments) {
+    public Payment(int divisionCnt, String token, String roomId, Long userId, int totalAmount, List<DivisionPayment> divisionPayments) {
         this.divisionCnt = divisionCnt;
         this.userId = userId;
         this.token = token;
