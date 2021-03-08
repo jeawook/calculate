@@ -12,13 +12,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class AdviceController {
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity notFoundExceptionHandler(NotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    public ResponseEntity<ErrorResponse> notFoundExceptionHandler(NotFoundException e) {
+        final ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.NOT_FOUND.value(),e.getMessage());
+        return new ResponseEntity<>(errorResponse,HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(PermissionException.class)
-    public ResponseEntity permissionExceptionHandler(PermissionException e) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    public ResponseEntity<ErrorResponse> permissionExceptionHandler(PermissionException e) {
+        final ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.FORBIDDEN.value(),e.getMessage());
+        return new ResponseEntity<>(errorResponse,HttpStatus.FORBIDDEN);
     }
 
 }
