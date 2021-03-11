@@ -59,7 +59,7 @@ class PaymentServiceTest {
     }
 
     @Test
-    @DisplayName("payment exception 테스트")
+    @DisplayName("없는 token 으로 요청 받을시 exception 테스트")
     public void paymentNotFountTest() {
         String token = "test";
         try {
@@ -72,8 +72,6 @@ class PaymentServiceTest {
     @Test
     @DisplayName("payment exception 테스트")
     public void paymentExceptionTest() {
-        String roomId = "room2";
-        int userId = 2;
         Payment findPayment = paymentService.findPayment(token, createdUserId);
         try {
             int amount1 = paymentService.payment(findPayment.getToken(), createdRoomId, createdUserId);
@@ -83,9 +81,8 @@ class PaymentServiceTest {
         }
     }
     @Test
-    @DisplayName("")
+    @DisplayName("사용자 중복 받기 요청시 오류 처리")
     public void paymentExceptionTest1() {
-        String roomId = "room2";
         Long userId = 2L;
         try {
             Payment findPayment = paymentService.findPayment(token, createdUserId);
@@ -94,7 +91,6 @@ class PaymentServiceTest {
             fail("사용자가 중복 요청시 에러가 발생 해야 한다");
 
         } catch (PermissionException e) {
-            e.getMessage().contains("2");
             e.printStackTrace();
         }
     }

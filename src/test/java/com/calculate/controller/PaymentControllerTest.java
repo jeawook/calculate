@@ -4,30 +4,20 @@ import com.calculate.common.BaseControllerTest;
 import com.calculate.domain.DivisionPayment;
 import com.calculate.domain.Payment;
 import com.calculate.dto.PaymentDto;
-import com.calculate.repository.DivisionPaymentRepository;
 import com.calculate.repository.PaymentRepository;
 import com.calculate.service.PaymentService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.filter.CharacterEncodingFilter;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.controller;
 
 class PaymentControllerTest extends BaseControllerTest {
 
@@ -61,12 +51,46 @@ class PaymentControllerTest extends BaseControllerTest {
     }
 
     @Test
+    @DisplayName("post 요청으로 뿌리기 생성 오류 테스트")
+    public void createPaymentErrorTest() throws Exception{
+        PaymentDto.request request = PaymentDto.request.builder()
+                .divisionCnt(3)
+                .totalAmount(-1)
+                .build();
+
+        mockMvc.perform(post("/api/payment")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HEADER_USER_ID,4)
+                .header(HEADER_ROOM_ID, "room1")
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("post 요청으로 뿌리기 생성 오류 테스트")
+    public void createPaymentRequestErrorTest() throws Exception{
+        PaymentDto.request request = PaymentDto.request.builder()
+                .build();
+
+        mockMvc.perform(post("/api/payment")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HEADER_USER_ID,4)
+                .header(HEADER_ROOM_ID, "room1")
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
     @DisplayName("put 요청으로 뿌리기 받기")
     public void paymentPaidTest() throws Exception{
 
         Payment payment = paymentService.createPayment(10000, 3, 1L, "room1");
         String token = payment.getToken();
-        System.out.println(token);
         mockMvc.perform(put("/api/payment/"+token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HEADER_USER_ID,4)
@@ -75,6 +99,22 @@ class PaymentControllerTest extends BaseControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("amount").exists());
+
+    }
+    @Test
+    @DisplayName("뿌리기 받기시 찾을수 없는 token 요청일때 not found")
+    public void paymentPaidNotFoundTest() throws Exception{
+
+        paymentService.createPayment(10000, 3, 1L, "room1");
+        mockMvc.perform(put("/api/payment/test")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HEADER_USER_ID,4)
+                .header(HEADER_ROOM_ID, "room1")
+                .accept(MediaTypes.HAL_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("status").value("404"))
+                .andExpect(jsonPath("message").exists());
 
     }
 
@@ -136,6 +176,7 @@ class PaymentControllerTest extends BaseControllerTest {
         mockMvc.perform(put(urlTemplate)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HEADER_ROOM_ID, "room1")
+                .header(HEADER_USER_ID, "sd")
                 .accept(MediaTypes.HAL_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -158,7 +199,7 @@ class PaymentControllerTest extends BaseControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("status").value(403))
                 .andExpect(jsonPath("message").exists())
-                .andExpect(jsonPath("response").exists());
+                .andExpect(jsonPath("response").isEmpty());
 
     }
 
@@ -188,7 +229,7 @@ class PaymentControllerTest extends BaseControllerTest {
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("status").value(403))
             .andExpect(jsonPath("message").exists())
-            .andExpect(jsonPath("response").exists());
+            .andExpect(jsonPath("response").isEmpty());
 
     }
 

@@ -1,19 +1,13 @@
 package com.calculate.controller;
 
 import com.calculate.common.ErrorResource;
-import com.calculate.domain.DivisionPayment;
 import com.calculate.domain.Payment;
 import com.calculate.dto.DivisionPaymentDto;
 import com.calculate.dto.PaymentDto;
-import com.calculate.resource.PaymentResource;
 import com.calculate.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.repository.query.Param;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
@@ -22,11 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,7 +27,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
-@Validated
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -72,7 +63,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{token}")
-    public ResponseEntity getPayment(@RequestHeader(room) @NotEmpty String roomId, @RequestHeader(user) @Min(0) Long userId, @PathVariable String token) {
+    public ResponseEntity getPayment(@RequestHeader(user) @Min(0) Long userId, @PathVariable String token) {
 
         Payment payment = paymentService.findPayment(token, userId);
 
